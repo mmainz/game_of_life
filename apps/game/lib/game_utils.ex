@@ -1,15 +1,18 @@
 defmodule GameUtils do
   def to_printable(state) do
-    state_string = state
-    |> Enum.map(fn row ->
-      row_string = row
-      |> Enum.map(&cell_to_printable/1)
-      |> Enum.join("|")
-      "|" <> row_string <> "|"
-    end)
-    |> Enum.join("\n")
+    "\n" <> state_string(state) <> "\n"
+  end
 
-    "\n" <> state_string <> "\n"
+  defp state_string(state) do
+    state
+    |> Enum.map(fn row -> "|" <> row_string(row) <> "|" end)
+    |> Enum.join("\n")
+  end
+
+  defp row_string(row) do
+    row
+    |> Enum.map(&cell_to_printable/1)
+    |> Enum.join("|")
   end
 
   defp cell_to_printable(true), do: "X"
