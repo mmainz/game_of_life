@@ -1,24 +1,26 @@
 defmodule Web.GameChannel do
   use Web.Web, :channel
 
-  def join("game:lobby", payload, socket) do
+  def join("game:lobby", _payload, socket) do
     {:ok, socket}
   end
 
-  def handle_in("create", payload, socket) do
-    {:reply, {:ok, payload}, socket}
+  def join("game:" <> _name, _payload, socket) do
+    {:ok, socket}
   end
 
-  # Channels can be used in a request/response fashion
-  # by sending replies to requests from the client
-  def handle_in("ping", payload, socket) do
-    {:reply, {:ok, payload}, socket}
+  def handle_in("create", %{"name" => name} = payload, socket) do
+    {:ok, _} = create_game(payload)
+    broadcast socket, "new_game", %{name: name}
+
+    {:reply, {:ok, %{name: name}}, socket}
   end
 
-  # It is also common to receive messages from the client and
-  # broadcast to everyone in the current topic (game:lobby).
-  def handle_in("shout", payload, socket) do
-    broadcast socket, "shout", payload
-    {:noreply, socket}
+  defp create_game(%{"width" => width, "height" => height, "name" => name}) do
+    {:ok, update_broadcaster} = UpdateBroadcaster.start_link(name)
+    {:ok, _} = GameServer.start_link(
+      %GameServer{state: GameUtils.random_state(width, height),
+                  consumer: update_broadcaster,
+                  update_interval: 500})
   end
 end

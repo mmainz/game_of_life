@@ -3,26 +3,36 @@ defmodule Web.GameChannelTest do
 
   alias Web.GameChannel
 
+  defp join_lobby do
+    with {:ok, _, socket} <- subscribe_and_join(
+           socket, GameChannel, "game:lobby"),
+      do: socket
+  end
+
+  defp join_game(name) do
+    with {:ok, _, socket} <- subscribe_and_join(
+           socket, GameChannel, "game:" <> name),
+      do: socket
+  end
+
   setup do
-    {:ok, _, socket} =
-      socket("user_id", %{some: :assign})
-      |> subscribe_and_join(GameChannel, "game:lobby")
-
-    {:ok, socket: socket}
+    {:ok, %{lobby: join_lobby}}
   end
 
-  test "ping replies with status ok", %{socket: socket} do
-    ref = push socket, "ping", %{"hello" => "there"}
-    assert_reply ref, :ok, %{"hello" => "there"}
+  test "creating a game responds with success", %{lobby: socket} do
+    ref = push socket, "create", %{width: 5, height: 5, name: "test"}
+
+    assert_reply ref, :ok, %{name: "test"}
+    assert_broadcast "new_game", %{name: "test"}
   end
 
-  test "shout broadcasts to game:lobby", %{socket: socket} do
-    push socket, "shout", %{"hello" => "all"}
-    assert_broadcast "shout", %{"hello" => "all"}
-  end
+  test "creating a game sends updates in the games room", %{lobby: socket} do
+    push socket, "create", %{width: 5, height: 5, name: "test"}
+    join_game("test")
 
-  test "broadcasts are pushed to the client", %{socket: socket} do
-    broadcast_from! socket, "broadcast", %{"some" => "data"}
-    assert_push "broadcast", %{"some" => "data"}
+    assert_broadcast "state_updated", %{state: state}, 1000
+    assert Enum.all?(state, fn row ->
+      Enum.all?(row, fn cell -> is_boolean(cell) end)
+    end)
   end
 end
