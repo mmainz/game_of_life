@@ -54,8 +54,8 @@ init =
         (phxSocket, phxCmd) = Phoenix.Socket.join channel initSocket
         initModel =
             { phxSocket = phxSocket
-            , width = 0
-            , height = 0
+            , width = 10
+            , height = 10
             , name = "MyGame"
             }
     in
