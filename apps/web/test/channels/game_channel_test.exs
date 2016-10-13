@@ -15,19 +15,28 @@ defmodule Web.GameChannelTest do
       do: socket
   end
 
+  defp create_game(name, width \\ 5, height \\ 5) do
+    with {:ok, reply, socket} <- join(
+           socket,
+           GameChannel,
+           "game:" <> name,
+           %{"width" => width, "height" => height}),
+      do: {socket, reply}
+  end
+
   setup do
     {:ok, %{lobby: join_lobby}}
   end
 
-  test "creating a game responds with success", %{lobby: socket} do
-    ref = push socket, "create", %{width: 5, height: 5, name: "test"}
+  test "creating a game responds with success" do
+    {_, reply} = create_game("test")
 
-    assert_reply ref, :ok, %{name: "test"}
-    assert_broadcast "new_game", %{name: "test"}
+    assert reply == %{success: true}
+    assert_broadcast "new_game", %{name: "test"}, 1000
   end
 
-  test "creating a game sends updates in the games room", %{lobby: socket} do
-    push socket, "create", %{width: 5, height: 5, name: "test"}
+  test "creating a game sends updates in the games room" do
+    create_game("test")
     join_game("test")
 
     assert_broadcast "state_updated", %{state: state}, 1000

@@ -16,6 +16,7 @@ type alias Model =
     , width : Int
     , height : Int
     , name : String
+    , games : List String
     }
 
 type alias NewGameNotification = { name : String }
@@ -57,21 +58,30 @@ init =
             , width = 10
             , height = 10
             , name = "MyGame"
+            , games = []
             }
     in
         ( initModel, Cmd.map PhoenixMsg phxCmd )
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ p [] [text "New Game of Life"]
-        , p [] [ input [onInput SetWidth, value (toString model.width)] []
-               , text "x"
-               , input [onInput SetHeight, value (toString model.height)] []
-               ]
-        , p [] [input [onInput SetName, value model.name] []]
-        , p [] [button [onClick CreateGame] [text "Create!"]]
-        ]
+    let
+      gameItems = List.map gameItem model.games
+    in
+      div []
+          [ p [] [text "New Game of Life"]
+          , p [] [ input [onInput SetWidth, value (toString model.width)] []
+                , text "x"
+                , input [onInput SetHeight, value (toString model.height)] []
+                ]
+          , p [] [input [onInput SetName, value model.name] []]
+          , p [] [button [onClick CreateGame] [text "Create!"]]
+          , ul [] gameItems
+          ]
+
+gameItem : String -> Html msg
+gameItem name =
+    li [] [text name]
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -109,12 +119,10 @@ update msg model =
                   Json.Encode.object
                         [ ("width", Json.Encode.int model.width)
                         , ("height", Json.Encode.int model.height)
-                        , ("name", Json.Encode.string model.name)
                         ]
-              push' =
-                Phoenix.Push.init "create" "game:lobby"
-                  |> Phoenix.Push.withPayload payload
-              (phxSocket, phxCmd) = Phoenix.Socket.push push' model.phxSocket
+              channel = Phoenix.Channel.init ("game:" ++ model.name)
+                        |> Phoenix.Channel.withPayload payload
+              (phxSocket, phxCmd) = Phoenix.Socket.join channel model.phxSocket
             in
               ( { model | phxSocket = phxSocket }
               , Cmd.map PhoenixMsg phxCmd
@@ -131,13 +139,9 @@ update msg model =
         ReceiveNewGame raw ->
             case Json.Decode.decodeValue newGameNotificationDecoder raw of
                 Ok newGameNotification ->
-                    let
-                      channel = Phoenix.Channel.init ("game:" ++ newGameNotification.name)
-                      (phxSocket, phxCmd) = Phoenix.Socket.join channel model.phxSocket
-                    in
-                      ( { model | phxSocket = phxSocket }
-                      , Cmd.map PhoenixMsg phxCmd
-                      )
+                    ( { model | games = (model.games ++ [newGameNotification.name]) }
+                    , Cmd.none
+                    )
 
                 Err _ ->
                     ( model
