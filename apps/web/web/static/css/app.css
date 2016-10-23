@@ -1,1 +1,21 @@
-/* This file is for your main application css. */
+.active-cell {
+  background-color: green;
+  width: 10px;
+  height: 10px;
+}
+
+.inactive-cell {
+  background-color: red;
+  width: 10px;
+  height: 10px;
+}
+
+.game-controls {
+  display: flex;
+  flex-direction: row;
+}
+
+.new-game-form {
+  display: flex;
+  flex-direction: column;
+}
