@@ -39,6 +39,7 @@ type Msg =
     | SetHeight String
     | SetName String
     | CreateGame
+    | JoinGame String
     | PhoenixMsg (Phoenix.Socket.Msg Msg)
     | ReceiveNewGame Json.Encode.Value
     | StateUpdated Json.Encode.Value
@@ -79,18 +80,22 @@ view model =
     let
       gameItems = ul [] (List.map gameItem model.games)
       stateTable = table [] (List.map stateRow model.gameState)
+      currentGame = case model.currentGame of
+                        Just game -> String.dropLeft 5 game
+                        Nothing -> ""
     in
       div [] [ div [class "game-controls"]
                    [ newGameForm model
                    , gameItems
                    ]
+                   , h1 [] [text currentGame]
              , stateTable
              ]
 
 newGameForm : Model -> Html Msg
 newGameForm model =
     div [class "new-game-form"]
-        [ p [] [text "New Game of Life"]
+        [ p [] [h1 [] [text "New Game of Life"]]
         , p [] [ input [onInput SetWidth, value (toString model.width)] []
                , text "x"
                , input [onInput SetHeight, value (toString model.height)] []
@@ -100,9 +105,11 @@ newGameForm model =
         ]
 
 
-gameItem : String -> Html msg
+gameItem : String -> Html Msg
 gameItem name =
-    li [] [text name]
+    li [] [ text name
+          , a [class "join-link", onClick (JoinGame name)] [text "Join"]
+          ]
 
 stateRow : List Bool -> Html msg
 stateRow row =
@@ -155,6 +162,22 @@ update msg model =
                         |> Phoenix.Channel.withPayload payload
               (joinedSocket, joinCmd) = Phoenix.Socket.join channel model.phxSocket
               phxSocket = Phoenix.Socket.on "state_updated" room StateUpdated joinedSocket
+            in
+              ( { model | phxSocket = phxSocket
+                , currentGame = Just room
+                }
+              , Cmd.batch [ Cmd.map PhoenixMsg leaveCmd
+                          , Cmd.map PhoenixMsg joinCmd
+                          ]
+              )
+
+        JoinGame game ->
+            let
+                (leftSocket, leaveCmd) = leaveCurrentGame model
+                room = "game:" ++ game
+                channel = Phoenix.Channel.init room
+                (joinedSocket, joinCmd) = Phoenix.Socket.join channel model.phxSocket
+                phxSocket = Phoenix.Socket.on "state_updated" room StateUpdated joinedSocket
             in
               ( { model | phxSocket = phxSocket
                 , currentGame = Just room
