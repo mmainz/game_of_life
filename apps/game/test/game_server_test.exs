@@ -3,6 +3,7 @@ defmodule GameServerTest do
 
   setup do
     {:ok, %{gameserver: %GameServer{state: [],
+                                    name: "test",
                                     consumer: self,
                                     update_interval: 10}}}
   end
@@ -23,8 +24,8 @@ defmodule GameServerTest do
   test "it sends new states to the consumer", %{gameserver: gameserver} do
     {:ok, _} = GameServer.start_link(gameserver)
 
-    assert_receive {:state_updated, []}
-    assert_receive {:state_updated, []}
+    assert_receive {:state_updated, "test", []}
+    assert_receive {:state_updated, "test", []}
   end
 
   test "it correctly updates the game state", %{gameserver: gameserver} do
@@ -33,11 +34,11 @@ defmodule GameServerTest do
                                         [false, false, true]]}
     {:ok, _} = GameServer.start_link(gameserver)
 
-    assert_receive {:state_updated, [[false, false, false],
-                                     [false, true, false],
-                                     [false, false, false]]}
-    assert_receive {:state_updated, [[false, false, false],
-                                     [false, false, false],
-                                     [false, false, false]]}
+    assert_receive {:state_updated, "test", [[false, false, false],
+                                             [false, true, false],
+                                             [false, false, false]]}
+    assert_receive {:state_updated, "test", [[false, false, false],
+                                             [false, false, false],
+                                             [false, false, false]]}
   end
 end

@@ -1,7 +1,7 @@
 defmodule GameServer do
   use GenServer
 
-  defstruct [:state, :consumer, :update_interval]
+  defstruct [:name, :state, :consumer, :update_interval]
 
   def start_link(gameserver, opts \\ []) do
     GenServer.start_link(__MODULE__, gameserver, opts)
@@ -15,7 +15,7 @@ defmodule GameServer do
 
   def handle_info(:update_state, gameserver) do
     new_state = Game.tick(gameserver.state)
-    send gameserver.consumer, {:state_updated, new_state}
+    send gameserver.consumer, {:state_updated, gameserver.name, new_state}
     queue_next_update(gameserver.update_interval)
 
     {:noreply, Map.put(gameserver, :state, new_state)}
