@@ -29,6 +29,6 @@ defmodule Web.GameChannel do
       GameSupervisor, [%GameServer{state: GameUtils.random_state(width, height),
                                    name: name,
                                    consumer: UpdateBroadcaster,
-                                   update_interval: 500}])
+                                   update_interval: 200}])
   end
 end
