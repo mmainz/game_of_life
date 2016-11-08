@@ -1,11 +1,11 @@
 .active-cell {
-  background-color: green;
+  background-color: #3b3;
   width: 10px;
   height: 10px;
 }
 
 .inactive-cell {
-  background-color: red;
+  background-color: #333;
   width: 10px;
   height: 10px;
 }
