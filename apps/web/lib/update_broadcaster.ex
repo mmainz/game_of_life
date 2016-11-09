@@ -12,4 +12,10 @@ defmodule UpdateBroadcaster do
 
     {:noreply, %{}}
   end
+
+  def handle_info({:game_finished, name}, %{}) do
+    Web.Endpoint.broadcast!("game:" <> name, "game_finished", %{})
+
+    {:noreply, %{}}
+  end
 end

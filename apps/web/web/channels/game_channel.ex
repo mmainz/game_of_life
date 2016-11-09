@@ -1,5 +1,6 @@
 defmodule Web.GameChannel do
   @moduledoc false
+  @game_timeout Application.get_env(:web, :game_timeout, 600_000)
 
   use Web.Web, :channel
 
@@ -30,6 +31,7 @@ defmodule Web.GameChannel do
     {:ok, _} = DynamicSupervisor.start_child(
       GameSupervisor, [%GameServer{state: GameUtils.random_state(width, height),
                                    name: name,
+                                   timeout: @game_timeout,
                                    consumer: UpdateBroadcaster,
                                    update_interval: 200}])
   end

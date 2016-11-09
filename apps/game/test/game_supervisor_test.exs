@@ -1,8 +1,6 @@
 defmodule GameSupervisorTest do
   use ExUnit.Case, async: true
 
-  alias Experimental.DynamicSupervisor
-
   test "can be started" do
     {:ok, pid} = GameSupervisor.start_link
 
@@ -19,12 +17,28 @@ defmodule GameSupervisorTest do
   test "can start a game server" do
     {:ok, pid} = GameSupervisor.start_link
 
-    DynamicSupervisor.start_child(pid, [%GameServer{state: [],
-                                                    name: "test",
-                                                    consumer: self,
-                                                    update_interval: 10}])
+    GameSupervisor.start_gameserver(pid, [%GameServer{state: [],
+                                                      name: "test",
+                                                      consumer: self,
+                                                      update_interval: 10}])
 
     assert_receive {:state_updated, "test", []}
     assert_receive {:state_updated, "test", []}
+  end
+
+  test "does not restart a game server that times out" do
+    {:ok, pid} = GameSupervisor.start_link
+
+    {:ok, gameserver_pid} = GameSupervisor.start_gameserver(
+      pid, [%GameServer{state: [],
+                        name: "test",
+                        consumer: self,
+                        update_interval: 10,
+                        timeout: 100}])
+    ref = Process.monitor(gameserver_pid)
+
+    assert 1 == Enum.count(Supervisor.which_children(pid))
+    assert_receive {:DOWN, ^ref, :process, ^gameserver_pid, :normal}, 2000
+    assert 0 == Enum.count(Supervisor.which_children(pid))
   end
 end

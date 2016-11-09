@@ -28,6 +28,15 @@ defmodule GameServerTest do
     assert_receive {:state_updated, "test", []}
   end
 
+  test "terminates normally after the configured timeout",
+    %{gameserver: gameserver} do
+    {:ok, pid} = GameServer.start_link(Map.put(gameserver, :timeout, 10))
+    ref = Process.monitor(pid)
+
+    assert_receive {:game_finished, "test"}
+    assert_receive {:DOWN, ^ref, :process, ^pid, :normal}
+  end
+
   test "it correctly updates the game state", %{gameserver: gameserver} do
     gameserver = %{gameserver | state: [[true, false, false],
                                         [false, true, false],

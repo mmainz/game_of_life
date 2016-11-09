@@ -8,3 +8,5 @@ config :web, Web.Endpoint,
 
 # Print only warnings and errors during test
 config :logger, level: :warn
+
+config :web, :game_timeout, 1000

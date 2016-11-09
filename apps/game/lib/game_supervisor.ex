@@ -1,17 +1,21 @@
 defmodule GameSupervisor do
   @moduledoc false
 
-  alias Experimental.DynamicSupervisor
-  use DynamicSupervisor
+  use Supervisor
 
   def start_link(opts \\ []) do
-    DynamicSupervisor.start_link(__MODULE__, [], opts)
+    Supervisor.start_link(__MODULE__, [], opts)
   end
 
   def init([]) do
     children = [
-      worker(GameServer, [])
+      worker(GameServer, [], restart: :transient)
     ]
-    {:ok, children, strategy: :one_for_one}
+
+    supervise(children, strategy: :simple_one_for_one)
+  end
+
+  def start_gameserver(pid, gameserver) do
+    Supervisor.start_child(pid, gameserver)
   end
 end

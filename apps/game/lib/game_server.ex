@@ -3,7 +3,7 @@ defmodule GameServer do
 
   use GenServer
 
-  defstruct [:name, :state, :consumer, :update_interval]
+  defstruct [:name, :state, :consumer, :update_interval, :timeout]
 
   def start_link(gameserver, opts \\ []) do
     GenServer.start_link(__MODULE__, gameserver, opts)
@@ -11,6 +11,7 @@ defmodule GameServer do
 
   def init(gameserver) do
     queue_next_update(gameserver.update_interval)
+    queue_timeout(gameserver.timeout)
 
     {:ok, gameserver}
   end
@@ -23,7 +24,17 @@ defmodule GameServer do
     {:noreply, Map.put(gameserver, :state, new_state)}
   end
 
+  def handle_info(:timeout, gameserver) do
+    send gameserver.consumer, {:game_finished, gameserver.name}
+    Process.exit(self, :normal)
+  end
+
   defp queue_next_update(interval) do
     Process.send_after(self, :update_state, interval)
+  end
+
+  defp queue_timeout(nil), do: nil
+  defp queue_timeout(timeout) do
+    Process.send_after(self, :timeout, timeout)
   end
 end

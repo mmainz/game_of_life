@@ -44,4 +44,11 @@ defmodule Web.GameChannelTest do
       Enum.all?(row, fn cell -> is_boolean(cell) end)
     end)
   end
+
+  test "game finishes after set timeout" do
+    create_game("test")
+    join_game("test")
+
+    assert_broadcast "game_finished", %{}, 2000
+  end
 end
