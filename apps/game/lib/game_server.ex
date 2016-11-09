@@ -1,4 +1,6 @@
 defmodule GameServer do
+  @moduledoc false
+
   use GenServer
 
   defstruct [:name, :state, :consumer, :update_interval]

@@ -1,4 +1,6 @@
 defmodule GameSupervisor do
+  @moduledoc false
+
   alias Experimental.DynamicSupervisor
   use DynamicSupervisor
 

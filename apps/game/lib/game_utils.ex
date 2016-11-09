@@ -1,17 +1,20 @@
 defmodule GameUtils do
+  @moduledoc false
+
   def to_printable(state) do
     "\n" <> state_string(state) <> "\n"
   end
 
   def random_state(size), do: random_state(size, size)
   def random_state(width, height) do
-    fn -> generate_row(width) end
+    width
+    |> generate_row_fn
     |> Stream.repeatedly
     |> Enum.take(height)
   end
 
   defp generate_row(width) do
-    fn -> Enum.random([true, false]) end
+    (&random_bool/0)
     |> Stream.repeatedly
     |> Enum.take(width)
   end
@@ -30,4 +33,12 @@ defmodule GameUtils do
 
   defp cell_to_printable(true), do: "X"
   defp cell_to_printable(false), do: " "
+
+  defp random_bool do
+    Enum.random([true, false])
+  end
+
+  defp generate_row_fn(width) do
+    fn -> generate_row(width) end
+  end
 end

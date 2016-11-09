@@ -1,4 +1,6 @@
 defmodule Web.GameChannel do
+  @moduledoc false
+
   use Web.Web, :channel
 
   alias Experimental.DynamicSupervisor

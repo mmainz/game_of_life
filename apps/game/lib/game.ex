@@ -1,4 +1,6 @@
 defmodule Game do
+  @moduledoc false
+
   def tick(state) do
     state
     |> Enum.with_index
@@ -26,7 +28,8 @@ defmodule Game do
 
   defp new_cell_state(state, coordinates) do
     current_state = get_cell(state, coordinates)
-    live_neighbors = get_neighbors(state, coordinates)
+    live_neighbors = state
+    |> get_neighbors(coordinates)
     |> Enum.filter(fn cell_state -> cell_state end)
     |> Enum.count
 
