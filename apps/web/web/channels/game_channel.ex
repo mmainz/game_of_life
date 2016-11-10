@@ -4,8 +4,6 @@ defmodule Web.GameChannel do
 
   use Web.Web, :channel
 
-  alias Experimental.DynamicSupervisor
-
   def join("game:lobby", _payload, socket) do
     {:ok, socket}
   end
@@ -28,7 +26,7 @@ defmodule Web.GameChannel do
   end
 
   defp create_game(%{"width" => width, "height" => height, "name" => name}) do
-    {:ok, _} = DynamicSupervisor.start_child(
+    {:ok, _} = Supervisor.start_child(
       GameSupervisor, [%GameServer{state: GameUtils.random_state(width, height),
                                    name: name,
                                    timeout: @game_timeout,

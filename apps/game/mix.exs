@@ -35,6 +35,6 @@ defmodule Game.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:gen_stage, git: "https://github.com/elixir-lang/gen_stage"}]
+    []
   end
 end
