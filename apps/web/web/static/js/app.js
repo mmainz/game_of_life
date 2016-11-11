@@ -20,7 +20,7 @@ import "phoenix_html"
 
 // import socket from "./socket"
 let protocol = 'ws'
-if (location.protocol === 'https') {
+if (location.protocol === 'https:') {
   protocol = 'wss'
 }
 const elmDiv = document.getElementById('elm-main')
