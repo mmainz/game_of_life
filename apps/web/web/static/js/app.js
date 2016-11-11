@@ -20,4 +20,4 @@ import "phoenix_html"
 
 // import socket from "./socket"
 const elmDiv = document.getElementById('elm-main')
-, elmApp = Elm.GameOfLife.embed(elmDiv)
+, elmApp = Elm.GameOfLife.embed(elmDiv, { host: `ws://${location.host}` })

@@ -44,25 +44,31 @@ type Msg =
     | ReceiveNewGame Json.Encode.Value
     | StateUpdated Json.Encode.Value
 
-main : Program Never
+type alias Flags =
+    { host: String }
+
+main : Program Flags
 main =
-    Html.App.program
+    Html.App.programWithFlags
         { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
         }
 
-initSocket : Phoenix.Socket.Socket Msg
-initSocket =
-    Phoenix.Socket.init "ws://localhost:4000/socket/websocket"
-        |> Phoenix.Socket.on "new_game" "game:lobby" ReceiveNewGame
+initSocket : String -> Phoenix.Socket.Socket Msg
+initSocket host =
+    let
+        socketPath = (host ++ "/socket/websocket")
+    in
+        Phoenix.Socket.init socketPath
+                |> Phoenix.Socket.on "new_game" "game:lobby" ReceiveNewGame
 
-init : ( Model, Cmd Msg )
-init =
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     let
         channel = Phoenix.Channel.init "game:lobby"
-        (phxSocket, phxCmd) = Phoenix.Socket.join channel initSocket
+        (phxSocket, phxCmd) = Phoenix.Socket.join channel (initSocket flags.host)
         initModel =
             { phxSocket = phxSocket
             , width = 10
