@@ -19,5 +19,9 @@ import "phoenix_html"
 // paths "./socket" or full ones "web/static/js/socket".
 
 // import socket from "./socket"
+let protocol = 'ws'
+if (location.protocol === 'https') {
+  protocol = 'wss'
+}
 const elmDiv = document.getElementById('elm-main')
-, elmApp = Elm.GameOfLife.embed(elmDiv, { host: `ws://${location.host}` })
+, elmApp = Elm.GameOfLife.embed(elmDiv, { host: `${protocol}://${location.host}` })
