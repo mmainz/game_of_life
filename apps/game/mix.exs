@@ -35,6 +35,6 @@ defmodule Game.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [{:mock, "~> 0.2", only: :test}]
   end
 end
