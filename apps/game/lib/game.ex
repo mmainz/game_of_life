@@ -4,7 +4,7 @@ defmodule Game do
   def tick(state) do
     state
     |> Enum.with_index
-    |> Enum.map(fn {row, y} ->
+    |> Utilities.pmap(fn {row, y} ->
       row
       |> Enum.with_index
       |> Enum.map(fn {_, x} ->
@@ -43,9 +43,9 @@ defmodule Game do
 
   defp neighbor_coordinates({x, y}) do
     for neighbor_x <- [x - 1, x, x + 1],
-        neighbor_y <- [y - 1, y, y + 1],
-        neighbor_coordinates = {neighbor_x, neighbor_y},
-        neighbor_coordinates != {x, y},
+      neighbor_y <- [y - 1, y, y + 1],
+      neighbor_coordinates = {neighbor_x, neighbor_y},
+      neighbor_coordinates != {x, y},
       do: neighbor_coordinates
   end
 
