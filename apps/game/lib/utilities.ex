@@ -1,4 +1,6 @@
 defmodule Utilities do
+  @moduledoc false
+
   def pmap(enum, fun) do
     enum
     |> Enum.map(fn i -> Task.async(fn -> fun.(i) end) end)
